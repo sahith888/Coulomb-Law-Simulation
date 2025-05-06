@@ -4,3 +4,5 @@ Sorry it contains a bunch of other garbage.
 In the future I will upload the final code which will provide a basic general purpose shading language accelerated with SIMD.
 
 Couloumbs law is just the definition that between to charged particles the force of attraction is proportional to k(q1q2)/r^2. in This simulation you will see two circles which represent points that both have a charge of magnitude 1. Its apparent that these points are attracted based on coulumbs as they accelerate much faster towards each when close. If You wait long enough you may even see them stat orbiting each other! :)
+
+Now updated with bonding! the circles repel if too close but at a certain from each other they experience 0 acceleration and a bond is formed ( it could take a while to see this bond to form, but it will!). Interestingly the circles vibrate in place even when bonded like this.
