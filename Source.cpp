@@ -1,4 +1,4 @@
-﻿#include<iostream>
+#include<iostream>
 #include<utility>
 
 #include <stdio.h>
@@ -73,6 +73,10 @@ __m256 smoothstep2d(__m256 edge0, __m256 edge1, __m256 x) {
 __m256 step2d(__m256 edge, __m256 x) {
 	__m256 comparison_mask = _mm256_cmp_ps(x, edge, _CMP_GE_OQ);
 	return _mm256_and_ps(comparison_mask, f(1.0));
+}
+
+float sigmoid_bonding(float x) {
+	return 2.0 / (1.0 + exp(-1.0 * (x - 0.05))) - 1; // the "Locking Function" so it is at a stable bond energy at 0.05 distance where there will be no forces if bond length is shorter the particles get repelled
 }
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pCmdLine, int nCmdShow) {
@@ -162,12 +166,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pCmdLine, 
 	color.initvec3(frame.width, frame.height);
 	float texturebuffer[3];
 	fvec3* buffer_a = new fvec3[((UWIDTH * UHEIGHT) / 8) + 2]{ f(0.0), f(0.0), f(0.0) };
-	std::pair<float, float> ball = { 0.2, 0.3 }; // coords
-	std::pair<float, float> velocity = { 200.0, 1.12541 }; //xy velocity
+	std::pair<float, float> ball = { 0.2, 0.0 }; // coords
+	std::pair<float, float> velocity = { 200.047, -0.012 }; //xy velocity
 	std::pair<float, float> acceleration = { 0.0, 0.0 };
 
-	std::pair<float, float> ball2 = { 0.5, 0.0 }; // coords
-	std::pair<float, float> velocity2 = { 0.3, 0.034631 }; //xy velocity
+	std::pair<float, float> ball2 = { 0.25, 0.0 }; // coords
+	std::pair<float, float> velocity2 = { 0.0241, 0.012 }; //xy velocity
 	std::pair<float, float> acceleration2 = { 0.0, 0.0 };
 	float dt = 0.01f;
 	while (!quit) {
@@ -209,8 +213,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pCmdLine, 
 			dist2 = _mm256_sub_ps(f(1.0), dist2);
 			dist2 = step2d(f(0.97), dist2);
 
-			dist = _mm256_mul_ps(dist, f(sqrt((velocity.first * velocity.first) + velocity.second * velocity.second)));
-			dist2 = _mm256_mul_ps(dist2, f(sqrt((velocity2.first * velocity2.first) + velocity2.second * velocity2.second)));
+			//dist = _mm256_mul_ps(dist, f(sqrt((velocity.first * velocity.first) + velocity.second * velocity.second)));
+			//dist2 = _mm256_mul_ps(dist2, f(sqrt((velocity2.first * velocity2.first) + velocity2.second * velocity2.second)));
 			col = fvec3{ dist,f(0.0),dist2};
 
 			//fvec2 mouse = { f(cursor_x), f(cursor_y) };
@@ -239,7 +243,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pCmdLine, 
 
 		float distSquared = dx * dx + dy * dy;
 		float distance = sqrt(distSquared);
-
 		// Prevent division by zero
 		if (distance != 0.0f) {
 			// Normalize direction vector
@@ -247,8 +250,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pCmdLine, 
 			float ny = dy / distance;
 
 			// Choose acceleration magnitude (e.g., inverse of distance or inverse-square)
-			float accelMag = 1.0f / distSquared; // or 1.0f / distance;
-
+			float accelMag = (1.0f / distSquared) * sigmoid_bonding(distance); // or 1.0f / distance;
+			//printf("%f\n", accelMag);
 			// Set acceleration vectors in opposite directions
 			acceleration.first = nx * accelMag;
 			acceleration.second = ny * accelMag;
